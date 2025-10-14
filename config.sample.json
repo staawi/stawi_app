@@ -1,9 +1,10 @@
 {
-  "application_name": "FluffyChat",
+  "application_name": "Stawi",
   "application_welcome_message": null,
-  "default_homeserver": "matrix.org",
-  "web_base_url": "https://fluffychat.im/web",
-  "privacy_url": "https://fluffychat.im/en/privacy.html",
+  "default_homeserver": "matrix.stawi.im",
+  "partition_id": "9bsv0s0hijjg02qk7l1g",
+  "web_base_url": "https://stawi.im/",
+  "privacy_url": "https://stawi.im/privacy",
   "render_html": false,
   "hide_redacted_events": false,
   "hide_unknown_events": false

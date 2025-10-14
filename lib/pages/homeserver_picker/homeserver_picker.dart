@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import 'package:collection/collection.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matrix/matrix.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:url_launcher/url_launcher_string.dart';
@@ -24,6 +23,7 @@ import 'package:fluffychat/utils/tor_stub.dart'
 
 class HomeserverPicker extends StatefulWidget {
   final bool addMultiAccount;
+
   const HomeserverPicker({required this.addMultiAccount, super.key});
 
   @override
@@ -32,10 +32,6 @@ class HomeserverPicker extends StatefulWidget {
 
 class HomeserverPickerController extends State<HomeserverPicker> {
   bool isLoading = false;
-
-  final TextEditingController homeserverController = TextEditingController(
-    text: AppConfig.defaultHomeserver,
-  );
 
   String? error;
 
@@ -52,9 +48,9 @@ class HomeserverPickerController extends State<HomeserverPicker> {
   /// makes sure that it is prefixed with https. Then it searches for the
   /// well-known information and forwards to the login page depending on the
   /// login type.
-  Future<void> checkHomeserverAction({bool legacyPasswordLogin = false}) async {
+  Future<void> checkHomeserverAction() async {
     final homeserverInput =
-        homeserverController.text.trim().toLowerCase().replaceAll(' ', '-');
+        AppConfig.defaultHomeserver.trim().toLowerCase().replaceAll(' ', '-');
 
     if (homeserverInput.isEmpty) {
       final client = await Matrix.of(context).getLoginClient();
@@ -80,22 +76,17 @@ class HomeserverPickerController extends State<HomeserverPicker> {
       final client = await Matrix.of(context).getLoginClient();
       final (_, _, loginFlows) = await client.checkHomeserver(homeserver);
       this.loginFlows = loginFlows;
-      if (supportsSso && !legacyPasswordLogin) {
-        if (!PlatformInfos.isMobile) {
-          final consent = await showOkCancelAlertDialog(
-            context: context,
-            title: l10n.appWantsToUseForLogin(homeserverInput),
-            message: l10n.appWantsToUseForLoginDescription,
-            okLabel: l10n.continueText,
-          );
-          if (consent != OkCancelResult.ok) return;
-        }
-        return ssoLoginAction();
+
+      if (!PlatformInfos.isMobile) {
+        final consent = await showOkCancelAlertDialog(
+          context: context,
+          title: l10n.appWantsToUseForLogin(homeserverInput),
+          message: l10n.appWantsToUseForLoginDescription,
+          okLabel: l10n.continueText,
+        );
+        if (consent != OkCancelResult.ok) return;
       }
-      context.push(
-        '${GoRouter.of(context).routeInformationProvider.value.uri.path}/login',
-        extra: client,
-      );
+      return ssoLoginAction();
     } catch (e) {
       setState(
         () => error = (e).toLocalizedString(
